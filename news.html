@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>お知らせ一覧｜松本歯科診療所</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;700&family=Allura&display=swap" rel="stylesheet">
+
+<style>
+:root{--gold:#C9A86A;--bg-main:#f8f6f2;}
+
+body{
+  margin:0;
+  font-family:'Shippori Mincho',serif;
+  background:var(--bg-main);
+  color:#333;
+  font-size:17px;
+}
+
+header{
+  background:#fff;
+  padding:20px;
+  text-align:center;
+  font-size:1.6rem;
+  font-weight:700;
+  border-bottom:1px solid #e5e0d8;
+}
+
+section{
+  max-width:900px;
+  margin:auto;
+  padding:60px 20px;
+}
+
+/* 一覧リスト */
+.news-list{
+  background:#fff;
+  border:1px solid #e5e0d8;
+  border-radius:14px;
+  padding:20px;
+  box-shadow:0 4px 14px rgba(0,0,0,.05);
+}
+
+.news-item{
+  padding:16px 0;
+  border-bottom:1px solid #eee;
+}
+.news-item:last-child{border-bottom:none;}
+
+.news-item a{
+  text-decoration:none;
+  color:#333;
+  display:flex;
+  gap:14px;
+}
+
+.news-date{color:#666;font-size:.95rem;min-width:90px;}
+.news-tag{background:var(--gold);color:#fff;padding:2px 10px;border-radius:4px;font-size:.85rem;}
+.news-title{font-size:1.1rem;}
+
+/* 詳細ページ */
+.article{
+  background:#fff;
+  border:1px solid #e5e0d8;
+  border-radius:14px;
+  padding:30px;
+  box-shadow:0 4px 14px rgba(0,0,0,.05);
+  margin-top:60px;
+}
+
+.article h1{
+  font-size:1.8rem;
+  margin-bottom:10px;
+  color:#333;
+}
+
+.article-meta{
+  display:flex;
+  gap:14px;
+  margin-bottom:20px;
+  font-size:.95rem;
+  color:#666;
+}
+
+.article-tag{
+  background:var(--gold);
+  color:#fff;
+  padding:2px 10px;
+  border-radius:4px;
+  font-size:.85rem;
+}
+
+.article p{
+  line-height:1.9;
+  margin-bottom:16px;
+}
+
+.back{
+  margin-top:20px;
+  text-align:right;
+}
+.back a{
+  color:var(--gold);
+  font-weight:600;
+  text-decoration:none;
+}
+</style>
+</head>
+
+<body>
+
+<header>お知らせ</header>
+
+<section>
+
+  <!-- ▼ 一覧表示 -->
+  <div class="news-list">
+
+    <div class="news-item">
+      <a href="#article-1">
+        <div class="news-date">2026.08.12</div>
+        <div class="news-tag">お知らせ</div>
+        <div class="news-title">8/12(水)〜16(日) 夏季休暇のお知らせ</div>
+      </a>
+    </div>
+
+    <div class="news-item">
+      <a href="#article-2">
+        <div class="news-date">2026.05.01</div>
+        <div class="news-tag">お知らせ</div>
+        <div class="news-title">歯科衛生士（正社員）募集のお知らせ</div>
+      </a>
+    </div>
+
+    <div class="news-item">
+      <a href="#article-3">
+        <div class="news-date">2026.03.10</div>
+        <div class="news-tag">コラム</div>
+        <div class="news-title">歯ブラシの交換頻度はどれくらい？</div>
+      </a>
+    </div>
+
+    <div class="news-item">
+      <a href="#article-4">
+        <div class="news-date">2026.02.20</div>
+        <div class="news-tag">コラム</div>
+        <div class="news-title">むし歯を防ぐために今日からできること</div>
+      </a>
+    </div>
+
+  </div>
+
+  <!-- ▼ 記事本文：1 -->
+  <div id="article-1" class="article">
+    <h1>8/12(水)〜16(日) 夏季休暇のお知らせ</h1>
+    <div class="article-meta">
+      <div class="article-date">2026.08.12</div>
+      <div class="article-tag">お知らせ</div>
+    </div>
+
+    <p>
+      松本歯科診療所では、上記期間を夏季休暇とさせていただきます。
+      休診期間中はお電話での受付も停止となりますので、あらかじめご了承ください。
+    </p>
+
+    <p>
+      休暇明けの診療は <strong>8月17日(月)</strong> より通常通り再開いたします。
+      ご予約やお問い合わせにつきましては、休暇期間中にいただいた内容を
+      17日以降に順次ご返信いたします。
+    </p>
+
+    <p>
+      ご不便をおかけいたしますが、何卒ご理解のほどよろしくお願い申し上げます。
+      急なお痛みなどがある場合は、和歌山市の救急歯科診療をご利用ください。
+    </p>
+
+    <div class="back"><a href="#top">↑ 一覧へ戻る</a></div>
+  </div>
+
+  <!-- ▼ 記事本文：2 -->
+  <div id="article-2" class="article">
+    <h1>歯科衛生士（正社員）募集のお知らせ</h1>
+    <div class="article-meta">
+      <div class="article-date">2026.05.01</div>
+      <div class="article-tag">お知らせ</div>
+    </div>
+
+    <p>
+      松本歯科診療所では、業務拡大に伴い<strong>歯科衛生士（正社員）</strong>を募集しております。
+      患者さまに寄り添った丁寧な診療を大切にできる方を歓迎いたします。
+    </p>
+
+    <p>
+      当院は予防歯科に力を入れており、衛生士業務を中心に活躍していただける環境です。
+      新卒・経験者ともに応募可能です。
+    </p>
+
+    <p>
+      詳細な募集要項や応募方法については、お電話またはお問い合わせフォームよりご連絡ください。
+    </p>
+
+    <div class="back"><a href="#top">↑ 一覧へ戻る</a></div>
+  </div>
+
+  <!-- ▼ 記事本文：3 -->
+  <div id="article-3" class="article">
+    <h1>歯ブラシの交換頻度はどれくらい？</h1>
+    <div class="article-meta">
+      <div class="article-date">2026.03.10</div>
+      <div class="article-tag">コラム</div>
+    </div>
+
+    <p>
+      毎日使う歯ブラシですが、意外と交換のタイミングを知らない方も多いのではないでしょうか。
+      一般的には<strong>1ヶ月に1回</strong>の交換が推奨されています。
+    </p>
+
+    <p>
+      毛先が広がった歯ブラシは、汚れを落とす力が大きく低下します。
+      また、雑菌が繁殖しやすくなるため、衛生面でも交換が必要です。
+    </p>
+
+    <p>
+      歯ブラシの状態をチェックし、清潔なブラシで毎日のケアを行いましょう。
+    </p>
+
+    <div class="back"><a href="#top">↑ 一覧へ戻る</a></div>
+  </div>
+
+  <!-- ▼ 記事本文：4 -->
+  <div id="article-4" class="article">
+    <h1>むし歯を防ぐために今日からできること</h1>
+    <div class="article-meta">
+      <div class="article-date">2026.02.20</div>
+      <div class="article-tag">コラム</div>
+    </div>
+
+    <p>
+      むし歯は生活習慣によって大きく予防できる病気です。
+      毎日の習慣を少し見直すだけで、むし歯のリスクを大きく減らすことができます。
+    </p>
+
+    <p>
+      特に重要なのは<strong>正しいブラッシング</strong>と<strong>間食のコントロール</strong>です。
+      食後すぐの歯磨きや、砂糖の多い飲食物を控えることが効果的です。
+    </p>
+
+    <p>
+      また、定期的な歯科検診で早期発見・早期治療を行うことも大切です。
+      健康な歯を守るために、ぜひ今日から実践してみてください。
+    </p>
+
+    <div class="back"><a href="#top">↑ 一覧へ戻る</a></div>
+  </div>
+
+</section>
+
+</body>
+</html>
