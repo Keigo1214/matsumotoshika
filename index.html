@@ -666,7 +666,7 @@ footer{background:#eee;padding:16px;text-align:center;font-size:.9rem;margin-top
       var s = document.createElement('span');
       // インラインブロックだと半角スペースは幅0に詰められるため、改行なしスペースで幅を確保
       s.textContent = isSpace ? ' ' : text[i];
-      s.style.cssText = 'opacity:0;display:inline-block;' + (isSpace ? 'width:.4em;' : '') + 'animation:oa-char .22s ' + (startDelay + i * charDelay).toFixed(2) + 's ease-out both;';
+      s.style.cssText = 'opacity:0;display:inline-block;' + (isSpace ? 'width:.9em;' : '') + 'animation:oa-char .22s ' + (startDelay + i * charDelay).toFixed(2) + 's ease-out both;';
       el.appendChild(s);
     }
   }
@@ -761,6 +761,9 @@ footer{background:#eee;padding:16px;text-align:center;font-size:.9rem;margin-top
     [ctx, bandX, trailX].forEach(function(x){ x.setTransform(DPR,0,0,DPR,0,0); });
     var imEl = track.querySelector('img');
     imgW = (imEl && imEl.getBoundingClientRect().width) || (H*0.75);
+    WIPE_LAG   = W * 0.28; // ボールの後ろに残す“原色”帯の長さ
+    WIPE_SOFT  = W * 0.22; // モノクロへ戻る境界のぼかし幅（大きいほど滑らか）
+    WIPE_SPEED = W * 0.45; // ボールが去った後、境界が右へ進む速さ(px/秒)
   }
   window.addEventListener('resize', resize);
 
@@ -777,14 +780,22 @@ footer{background:#eee;padding:16px;text-align:center;font-size:.9rem;margin-top
   ];
   var pIndex = 0, ball = null, lastSpawn = 0, nextGap = 1500, firstDrop = true;
   var prevX = null, prevY = null, lastInk = -1e9, trailDirty = false;
-  var TAU = 360;        // フェードの時定数(ms)。大きいほどゆっくり消える
-  var FADE_DONE = 2100; // これ以上経つと軌跡は消えたとみなす(ms)
+  var FADE_DONE = 3200; // ボールが触れなくなってからこの時間で軌跡バッファを破棄(ms)
+  // ── 通った跡を左→右へ順番に、滑らかにモノクロへ戻す“掃き出し”用 ──
+  var inkFrontX = -1e9;   // ボールが到達した最も右のx（原色を付けた先端）
+  var wipeX     = -1e9;   // モノクロへ戻す境界の現在位置（これより左は戻し済み）
+  var WIPE_LAG = 0, WIPE_SOFT = 0, WIPE_SPEED = 0; // 画面幅Wに応じてresize()で設定
+  var WIPE_FOLLOW = 0.20; // 境界がボールを追う滑らかさ(秒)。小さいほど早く追従
+  var WIPE_EDGE   = 0.26; // 境界が通り過ぎた後、色が抜けきる速さ(秒)
 
   function spawn(now){
     var P = PAT[pIndex % PAT.length]; pIndex++;
     var r = 0.10 * H; // 画面に対して大きめ
     ball = { r:r, x:(P.x<0 ? -r : P.x*W), y:P.y*H, vx:P.vx*W, vy:P.vy*H, g:P.g*H, e:P.e };
     prevX = null; prevY = null;
+    inkFrontX = ball.x;
+    wipeX = ball.x - WIPE_LAG - WIPE_SOFT;          // 戻し境界は跡より十分左から
+    trailX.clearRect(0,0,W,H); trailDirty = false;  // 前回の残りを消してから開始
   }
   function step(dt){
     var b = ball;
@@ -794,13 +805,26 @@ footer{background:#eee;padding:16px;text-align:center;font-size:.9rem;margin-top
   }
 
   function draw(now, dt){
-    // 1) 軌跡バッファを指数フェード（フレームレート非依存＝原色からモノトーンへ滑らかに戻る）
+    // 1) 通った跡を左→右へ順番にモノクロへ戻す（境界を滑らかに掃き出す。FR非依存）
     if(dt > 0 && (ball || trailDirty)){
-      var erase = 1 - Math.exp(-dt/TAU);
-      trailX.globalCompositeOperation = 'destination-out';
-      trailX.globalAlpha = erase; trailX.fillStyle = '#000';
-      trailX.fillRect(0,0,W,H);
-      trailX.globalAlpha = 1; trailX.globalCompositeOperation = 'source-over';
+      if(ball){
+        if(ball.x > inkFrontX) inkFrontX = ball.x;        // 原色を付けた先端を更新
+        var target = inkFrontX - WIPE_LAG;                // ボールの後方にLAGぶん色を残す
+        wipeX += (target - wipeX) * (1 - Math.exp(-dt/WIPE_FOLLOW));
+      } else {
+        wipeX += WIPE_SPEED * dt;                         // 去った後は一定速度で残りを掃き出す
+      }
+      // 境界より左ほど強く色を抜く横グラデーション。境界が通り過ぎる間に各列が滑らかに退色。
+      if(wipeX > 0){
+        var be = 1 - Math.exp(-dt/WIPE_EDGE);
+        var g = trailX.createLinearGradient(wipeX - WIPE_SOFT, 0, wipeX, 0);
+        g.addColorStop(0, 'rgba(0,0,0,'+be+')');
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        trailX.globalCompositeOperation = 'destination-out';
+        trailX.fillStyle = g;
+        trailX.fillRect(0, 0, wipeX, H);
+        trailX.globalCompositeOperation = 'source-over';
+      }
     }
     // 2) ボール現在地を軌跡バッファへ（1本の線で焼き込み＝重なりによるムラが出ない）
     if(ball){
