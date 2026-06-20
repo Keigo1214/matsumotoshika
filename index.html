@@ -271,6 +271,7 @@ footer{background:#eee;padding:16px;text-align:center;font-size:.9rem;margin-top
 @keyframes oa-flow{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
 .oa-scrim{position:absolute;inset:0;pointer-events:none;background:radial-gradient(62% 52% at 50% 48%, rgba(8,24,23,.42), rgba(8,24,23,0) 72%),linear-gradient(180deg, rgba(8,24,23,.55) 0%, rgba(10,32,30,.24) 42%, rgba(8,24,23,.62) 100%);}
 .oa-vignette{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 170px 45px rgba(5,18,17,.42);}
+#oa-fx{position:absolute;inset:0;z-index:2;pointer-events:none;}
 #oa-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;z-index:3;text-align:center;}
 #oa-svg{width:min(40vw,176px);height:auto;overflow:visible;}
 .oa-scroll{position:absolute;left:50%;bottom:30px;bottom:calc(30px + (100vh - 100svh));transform:translateX(-50%);z-index:3;display:flex;flex-direction:column;align-items:center;gap:9px;color:#E7E1D5;font-family:system-ui,sans-serif;font-size:10px;letter-spacing:.34em;text-decoration:none;opacity:0;transition:opacity 1s ease;}
@@ -351,6 +352,7 @@ footer{background:#eee;padding:16px;text-align:center;font-size:.9rem;margin-top
   </div>
   <div class="oa-scrim"></div>
   <div class="oa-vignette"></div>
+  <canvas id="oa-fx" aria-hidden="true"></canvas>
   <div id="oa-inner">
     <svg id="oa-svg" viewBox="90 96 160 230" xmlns="http://www.w3.org/2000/svg">
       <g id="oa-body">
@@ -720,6 +722,136 @@ footer{background:#eee;padding:16px;text-align:center;font-size:.9rem;margin-top
   window.addEventListener('scroll', updateChrome, {passive:true});
   window.addEventListener('resize', updateChrome);
   updateChrome();
+})();
+</script>
+
+<script>
+/* オープニング背景: 数秒に一度ボールが飛び込み、4〜7回バウンドして右へ抜ける。
+   通った軌跡だけ、グレード前の原色(top-N.src.jpg)を流れる帯と同期して見せる。
+   canvas は背景の上・ロゴ/文字(z-index:3)の下なので、効果は背景のみに掛かる。 */
+(function(){
+  var hero   = document.getElementById('oa-w');
+  var canvas = document.getElementById('oa-fx');
+  var track  = document.querySelector('.oa-track');
+  if(!hero || !canvas || !track || !canvas.getContext) return;
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var ctx   = canvas.getContext('2d');
+  var bandC = document.createElement('canvas'), bandX = bandC.getContext('2d');
+  var maskC = document.createElement('canvas'), maskX = maskC.getContext('2d');
+
+  // グレード前(原色)の画像
+  var SRC = ['top-1.src.jpg','top-2.src.jpg','top-3.src.jpg','top-4.src.jpg','top-5.src.jpg'];
+  var imgs = SRC.map(function(s){ var im = new Image(); im.src = s; return im; });
+
+  var DPR = Math.min(window.devicePixelRatio || 1, 2);
+  var W = 0, H = 0, imgW = 0;
+  function resize(){
+    W = hero.clientWidth; H = hero.clientHeight;
+    [canvas, bandC, maskC].forEach(function(c){ c.width = Math.round(W*DPR); c.height = Math.round(H*DPR); });
+    canvas.style.width = W+'px'; canvas.style.height = H+'px';
+    [ctx, bandX, maskX].forEach(function(x){ x.setTransform(DPR,0,0,DPR,0,0); });
+    var imEl = track.querySelector('img');
+    imgW = (imEl && imEl.getBoundingClientRect().width) || (H*0.75);
+  }
+  window.addEventListener('resize', resize);
+
+  // ボール色: 歯のアイコンと同じ単色（光・影なし）
+  var BALL_COLOR = '#1F6E6B';
+
+  // 5パターン（x<0は左外から / yが小さい・負は上から落下）。よく跳ねる設定。
+  var PAT = [
+    {x:-1,   y:0.46, vx:0.30, vy:-1.20, g:2.3, e:0.80},
+    {x:0.05, y:-0.14,vx:0.27, vy:0.00,  g:2.4, e:0.82},
+    {x:-1,   y:0.55, vx:0.38, vy:-1.28, g:2.6, e:0.78},
+    {x:-1,   y:0.42, vx:0.26, vy:-1.16, g:2.2, e:0.82},
+    {x:-1,   y:0.08, vx:0.33, vy:0.12,  g:2.3, e:0.80}
+  ];
+  var pIndex = 0, ball = null, trail = [], lastSpawn = 0, nextGap = 1500;
+  var FADE = 1500; // 軌跡が消えるまで(ms)
+
+  function spawn(now){
+    var P = PAT[pIndex % PAT.length]; pIndex++;
+    var r = 0.10 * H; // 画面に対して大きめ
+    ball = { r:r, x:(P.x<0 ? -r : P.x*W), y:P.y*H, vx:P.vx*W, vy:P.vy*H, g:P.g*H, e:P.e };
+    // 軌跡は消さない（前の軌跡はそのままフェードを続ける）
+  }
+  function step(dt, now){
+    var b = ball;
+    b.vy += b.g*dt; b.x += b.vx*dt; b.y += b.vy*dt;
+    var floor = H - b.r;
+    if(b.y > floor){ b.y = floor; b.vy = -b.vy*b.e; if(Math.abs(b.vy) < 0.05*H) b.vy = 0; }
+    trail.push({x:b.x, y:b.y, t:now, r:b.r});
+  }
+
+  function draw(now){
+    ctx.clearRect(0,0,W,H);
+    // 寿命を過ぎた点だけ除去（このとき alpha はほぼ0なので見た目に影響しない）
+    while(trail.length && now - trail[0].t > FADE) trail.shift();
+
+    if(trail.length > 1){
+      var tx = 0, cs = getComputedStyle(track).transform;
+      if(cs && cs !== 'none'){ try{ tx = new DOMMatrix(cs).m41; }catch(e){} }
+
+      var rr = (ball ? ball.r : trail[trail.length-1].r);
+      var trailW = rr * 1.5;
+      var minx=1e9,miny=1e9,maxx=-1e9,maxy=-1e9, i, p;
+      for(i=0;i<trail.length;i++){ p=trail[i]; if(p.x<minx)minx=p.x; if(p.y<miny)miny=p.y; if(p.x>maxx)maxx=p.x; if(p.y>maxy)maxy=p.y; }
+      minx-=trailW; miny-=trailW; maxx+=trailW; maxy+=trailW;
+
+      // マスク（軌跡）。年齢で滑らかにフェード
+      maskX.clearRect(0,0,W,H);
+      maskX.lineCap='round'; maskX.lineJoin='round'; maskX.lineWidth=trailW; maskX.strokeStyle='#fff';
+      for(i=1;i<trail.length;i++){
+        var a = 1 - (now - trail[i].t)/FADE; if(a<0)a=0; if(a>1)a=1;
+        maskX.globalAlpha = a*a; // ease-out
+        maskX.beginPath(); maskX.moveTo(trail[i-1].x, trail[i-1].y); maskX.lineTo(trail[i].x, trail[i].y); maskX.stroke();
+      }
+      maskX.globalAlpha = 1;
+
+      // 原色の帯を bbox に描き、マスクで切り抜く
+      bandX.clearRect(0,0,W,H);
+      bandX.save();
+      bandX.beginPath(); bandX.rect(minx,miny,maxx-minx,maxy-miny); bandX.clip();
+      var i0 = Math.floor((minx - tx)/imgW) - 1, i1 = Math.ceil((maxx - tx)/imgW) + 1;
+      for(i=i0;i<=i1;i++){
+        var im = imgs[((i%5)+5)%5];
+        if(im.complete && im.naturalWidth) bandX.drawImage(im, tx + i*imgW, 0, imgW, H);
+      }
+      bandX.restore();
+      bandX.globalCompositeOperation='destination-in';
+      bandX.drawImage(maskC, 0, 0, W, H);
+      bandX.globalCompositeOperation='source-over';
+      ctx.drawImage(bandC, 0, 0, W, H);
+    }
+
+    // ボール本体（単色・無加工）
+    if(ball){
+      ctx.fillStyle = BALL_COLOR;
+      ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2); ctx.fill();
+    }
+  }
+
+  var lastT = 0;
+  function loop(now){
+    requestAnimationFrame(loop);
+    if(document.hidden){ lastT = now; return; }
+    if(!W) resize();
+    if(window.scrollY > H){ lastT = now; return; } // ヒーローが隠れたら休止
+    var dt = lastT ? Math.min((now-lastT)/1000, 0.05) : 0; lastT = now;
+    if(!ball){
+      if(now - lastSpawn > nextGap){ spawn(now); lastSpawn = now; }
+    } else {
+      step(dt, now);
+      // 右に見切れたらボールだけ消す（軌跡はフェードで残す）
+      if(ball.x - ball.r > W){ ball = null; lastSpawn = now; nextGap = 2800 + Math.random()*2200; }
+    }
+    draw(now);
+  }
+  function start(){ resize(); lastSpawn = performance.now(); lastT = 0; requestAnimationFrame(loop); }
+
+  if(document.readyState === 'complete') setTimeout(start, 3500);
+  else window.addEventListener('load', function(){ setTimeout(start, 3200); });
 })();
 </script>
 
