@@ -4,7 +4,10 @@
 <meta charset="UTF-8">
 <title>松本歯科診療所｜和歌山市の歯医者</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;700&family=Allura&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;700&family=Allura&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;700&family=Allura&display=swap"></noscript>
 <style>
 :root{--gold:#C9A86A;--bg-main:#f8f6f2;--bg-sub:#f2ede5;--shadow:0 8px 24px rgba(0,0,0,.08);}
 *,*::before,*::after{box-sizing:border-box;}
@@ -262,9 +265,9 @@ footer{background:#eee;padding:16px;text-align:center;font-size:.9rem;margin-top
 #oa-w{position:relative;height:100vh;height:100dvh;overflow:hidden;background:#0c2422;}
 .oa-band{position:absolute;inset:0;overflow:hidden;opacity:0;transition:opacity 1.4s ease;}
 .oa-band.show{opacity:1;}
-.oa-track{display:flex;width:max-content;height:100%;will-change:transform;animation:oa-flow 55s linear infinite;}
-.oa-track img{flex:0 0 auto;height:100%;width:auto;display:block;filter:grayscale(.5) saturate(.92) contrast(1.04) brightness(.92);}
-@keyframes oa-flow{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.oa-track{display:flex;flex-wrap:nowrap;width:max-content;height:100%;animation:oa-flow 55s linear infinite;}
+.oa-track img{flex:0 0 auto;height:100%;width:auto;aspect-ratio:3/4;display:block;filter:grayscale(.5) saturate(.92) contrast(1.04) brightness(.92);}
+@keyframes oa-flow{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
 .oa-scrim{position:absolute;inset:0;pointer-events:none;background:radial-gradient(62% 52% at 50% 48%, rgba(8,24,23,.42), rgba(8,24,23,0) 72%),linear-gradient(180deg, rgba(8,24,23,.55) 0%, rgba(10,32,30,.24) 42%, rgba(8,24,23,.62) 100%);}
 .oa-vignette{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 170px 45px rgba(5,18,17,.42);}
 #oa-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;z-index:3;text-align:center;}
@@ -273,20 +276,25 @@ footer{background:#eee;padding:16px;text-align:center;font-size:.9rem;margin-top
 .oa-scroll.show{opacity:.82;}
 .oa-scroll .chev{width:16px;height:16px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);animation:oa-bounce 1.8s ease-in-out infinite;}
 @keyframes oa-bounce{0%,100%{transform:rotate(45deg) translate(0,0);opacity:.5}50%{transform:rotate(45deg) translate(4px,4px);opacity:1}}
-@media (prefers-reduced-motion: reduce){.oa-track{animation:none;}.oa-scroll .chev{animation:none;}}
+@media (prefers-reduced-motion: reduce){.oa-scroll .chev{animation:none;}}
 
-/* 歯のボディ */
-#oa-body{transform-box:fill-box;transform-origin:center;animation:oa-body .6s ease-out both;}
+/* 歯のボディ（.go が付いてからアニメ開始。それまでは非表示） */
+#oa-body{transform-box:fill-box;transform-origin:center;opacity:0;}
+#oa-w.go #oa-body{animation:oa-body .6s ease-out both;}
 @keyframes oa-body{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
 
 /* 茎が下から上へ伸びる */
-#oa-stem{stroke-dasharray:62;stroke-dashoffset:62;animation:oa-stem-draw .5s .58s ease-out both;}
+#oa-stem{stroke-dasharray:62;stroke-dashoffset:62;}
+#oa-w.go #oa-stem{animation:oa-stem-draw .5s .58s ease-out both;}
 @keyframes oa-stem-draw{from{stroke-dashoffset:62}to{stroke-dashoffset:0}}
 
 /* 右の葉っぱ（上・右へ広がる）: transform-origin = 茎の先端（bbox左上） */
 #oa-leaf-r{
   transform-box:fill-box;
   transform-origin:0% 0%;
+  opacity:0;
+}
+#oa-w.go #oa-leaf-r{
   animation:oa-leaf-r 1.15s .92s linear both;
 }
 @keyframes oa-leaf-r{
@@ -304,6 +312,9 @@ footer{background:#eee;padding:16px;text-align:center;font-size:.9rem;margin-top
 #oa-leaf-l{
   transform-box:fill-box;
   transform-origin:100% 0%;
+  opacity:0;
+}
+#oa-w.go #oa-leaf-l{
   animation:oa-leaf-l 1.15s 1.08s linear both;
 }
 @keyframes oa-leaf-l{
@@ -317,8 +328,9 @@ footer{background:#eee;padding:16px;text-align:center;font-size:.9rem;margin-top
   100%{opacity:1;transform:scale(1) rotate(0deg)}
 }
 
-/* テキスト: 一文字ずつ左から登場 */
-#oa-txt{opacity:1;text-align:center;}
+/* テキスト: 一文字ずつ左から登場（.go まで非表示） */
+#oa-txt{opacity:0;text-align:center;}
+#oa-w.go #oa-txt{opacity:1;}
 @keyframes oa-char{
   from{opacity:0;transform:translateY(-5px)}
   to  {opacity:1;transform:translateY(0)}
@@ -633,27 +645,64 @@ footer{background:#eee;padding:16px;text-align:center;font-size:.9rem;margin-top
   var header = document.querySelector('header');
   var footer = document.querySelector('.line-footer');
   var docEl  = document.documentElement;
-
-  docEl.style.overflow = 'hidden';
-  setTimeout(function(){ docEl.style.overflow = ''; }, 2800);
+  var nameEl = document.getElementById('oa-name');
+  var subEl  = document.getElementById('oa-sub');
+  if(!w){ return; }
 
   // 一文字ずつ左から順番に表示
   function splitChars(el, startDelay, charDelay) {
+    if(!el) return;
     var text = el.textContent;
     el.textContent = '';
     for (var i = 0; i < text.length; i++) {
       var s = document.createElement('span');
-      s.textContent = text[i] === ' ' ? ' ' : text[i];
+      s.textContent = text[i] === ' ' ? ' ' : text[i];
       s.style.cssText = 'opacity:0;display:inline-block;animation:oa-char .22s ' + (startDelay + i * charDelay).toFixed(2) + 's ease-out both;';
       el.appendChild(s);
     }
   }
-  splitChars(document.getElementById('oa-name'), 1.9, 0.10);
-  splitChars(document.getElementById('oa-sub'), 1.9, 0.027);
 
-  // テキスト表示完了後に、写真が右から左へ流れる背景をフェードイン
-  setTimeout(function(){ if(band) band.classList.add('show'); }, 2900);
-  setTimeout(function(){ if(cue)  cue.classList.add('show');  }, 3400);
+  // 背景画像のプリロード（全部読み込み完了、または8秒経過で解決）
+  var imgs = Array.prototype.slice.call(w.querySelectorAll('.oa-track img'));
+  var imagesReady = new Promise(function(resolve){
+    var n = imgs.length;
+    if(!n){ resolve(); return; }
+    function done(){ if(--n <= 0) resolve(); }
+    imgs.forEach(function(im){
+      if(im.complete && im.naturalWidth > 0){ done(); }
+      else { im.addEventListener('load', done); im.addEventListener('error', done); }
+    });
+    setTimeout(resolve, 8000);
+  });
+
+  var started = false;
+  function start(){
+    if(started) return; started = true;
+
+    // イントロ再生中だけスクロールを一時固定
+    docEl.style.overflow = 'hidden';
+    setTimeout(function(){ docEl.style.overflow = ''; }, 2800);
+
+    // ロゴ（歯→茎→葉）とテキストのアニメをここで発火
+    w.classList.add('go');
+    splitChars(nameEl, 1.9, 0.10);
+    splitChars(subEl, 1.9, 0.027);
+
+    // テキスト表示完了（約2.9秒）と画像読込完了の両方がそろってから背景を表示
+    var introDone = new Promise(function(r){ setTimeout(r, 2900); });
+    Promise.all([imagesReady, introDone]).then(function(){
+      if(band) band.classList.add('show');
+      setTimeout(function(){ if(cue) cue.classList.add('show'); }, 500);
+    });
+  }
+
+  // 最初の描画が終わってから開始（読み込みが遅い端末で“いきなり完了状態”になるのを防ぐ）
+  function kick(){ requestAnimationFrame(function(){ requestAnimationFrame(start); }); }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', kick);
+  } else {
+    kick();
+  }
 
   // オープニングが完全に画面外へ出たらヘッダー／フッターを表示
   function setChrome(show){
