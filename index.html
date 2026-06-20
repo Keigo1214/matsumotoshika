@@ -754,11 +754,19 @@ footer{background:#eee;padding:16px;text-align:center;font-size:.9rem;margin-top
 
   var DPR = Math.min(window.devicePixelRatio || 1, 2);
   var W = 0, H = 0, imgW = 0;
+  var curCW = 0, curCH = 0;
   function resize(){
     W = hero.clientWidth; H = hero.clientHeight;
-    [canvas, bandC, trailC].forEach(function(c){ c.width = Math.round(W*DPR); c.height = Math.round(H*DPR); });
+    var cw = Math.round(W*DPR), ch = Math.round(H*DPR);
+    // iOSではスクロール時にアドレスバーが伸縮してresizeが多発する。canvasはwidth/height
+    // を代入すると（同じ値でも）中身が全消去されるため、実寸が変わらないときは作り直さない。
+    // これでスクロールしてもボールの軌跡(trailC)が消えず、原色のまま残る。
+    if(cw !== curCW || ch !== curCH){
+      curCW = cw; curCH = ch;
+      [canvas, bandC, trailC].forEach(function(c){ c.width = cw; c.height = ch; });
+      [ctx, bandX, trailX].forEach(function(x){ x.setTransform(DPR,0,0,DPR,0,0); });
+    }
     canvas.style.width = W+'px'; canvas.style.height = H+'px';
-    [ctx, bandX, trailX].forEach(function(x){ x.setTransform(DPR,0,0,DPR,0,0); });
     var imEl = track.querySelector('img');
     imgW = (imEl && imEl.getBoundingClientRect().width) || (H*0.75);
     WIPE_LAG   = W * 0.28; // ボールの後ろに残す“原色”帯の長さ
